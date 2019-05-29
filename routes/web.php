@@ -18,58 +18,44 @@ Route::group(['prefix'=>'admin','namespace'=>'Admin','middleware'=>['web']], fun
     Route::any('login', 'IndexController@login');
     Route::any('logout', 'IndexController@logout');
 });
-Route::group(['prefix'=>'admin','namespace'=>'Admin','middleware'=>['web','admin.login']], function () {
+Route::group(['prefix'=>'admin','namespace'=>'Admin','middleware'=>['web','webAdmin']], function () {
     Route::any('index', 'IndexController@index');
     Route::any('profile', 'IndexController@profile');
-    Route::any('error', 'IndexController@error');
 
-    Route::any('article', 'ArticleController@index');
-    Route::any('infoArticle', 'ArticleController@info');
-    Route::any('addArticle', 'ArticleController@add');
-    Route::any('editArticle', 'ArticleController@edit');
-    Route::any('delArticle', 'ArticleController@del');
+    Route::any('adminList', 'AdminController@adminList');
+    Route::any('adminAdd', 'AdminController@adminAdd');
+    Route::any('adminInfo', 'AdminController@adminInfo');
+    Route::any('adminEdit', 'AdminController@adminEdit');
+    Route::any('adminDel', 'AdminController@adminDel');
 
-    Route::any('category', 'CategoryController@index');
-    Route::any('infoCategory', 'CategoryController@info');
-    Route::any('addCategory', 'CategoryController@add');
-    Route::any('editCategory', 'CategoryController@edit');
-    Route::any('delCategory', 'CategoryController@del');
+    Route::any('roleList', 'RoleController@roleList');
+    Route::any('roleAdd', 'RoleController@roleAdd');
+    Route::any('roleInfo', 'RoleController@roleInfo');
+    Route::any('roleEdit', 'RoleController@roleEdit');
+    Route::any('roleDel', 'RoleController@roleDel');
 
-    Route::any('link', 'LinkController@index');
-    Route::any('infoLink', 'LinkController@info');
-    Route::any('addLink', 'LinkController@add');
-    Route::any('editLink', 'LinkController@edit');
-    Route::any('delLink', 'LinkController@del');
+    Route::any('permissionList', 'PermissionController@permissionList');
+    Route::any('permissionAdd', 'PermissionController@permissionAdd');
+    Route::any('permissionInfo', 'PermissionController@permissionInfo');
+    Route::any('permissionEdit', 'PermissionController@permissionEdit');
+    Route::any('permissionDel', 'PermissionController@permissionDel');
 
-    Route::any('email', 'EmailController@index');
-    Route::any('infoEmail', 'EmailController@info');
-    Route::any('addEmail', 'EmailController@add');
-    Route::any('editEmail', 'EmailController@edit');
-    Route::any('delEmail', 'EmailController@del');
+    Route::any('configList', 'ConfigController@configList');
+    Route::any('configAdd', 'ConfigController@configAdd');
+    Route::any('configInfo', 'ConfigController@configInfo');
+    Route::any('configEdit', 'ConfigController@configEdit');
+    Route::any('configDel', 'ConfigController@configDel');
+    Route::any('configSave', 'ConfigController@configSave');
 
-    Route::any('rule', 'RuleController@index');
-    Route::any('infoRule', 'RuleController@info');
-    Route::any('addRule', 'RuleController@add');
-    Route::any('editRule', 'RuleController@edit');
-    Route::any('delRule', 'RuleController@del');
+    Route::any('categoryList', 'CategoryController@categoryList');
+    Route::any('categoryAdd', 'CategoryController@categoryAdd');
+    Route::any('categoryInfo', 'CategoryController@categoryInfo');
+    Route::any('categoryEdit', 'CategoryController@categoryEdit');
+    Route::any('categoryDel', 'CategoryController@categoryDel');
 
-    Route::any('group', 'GroupController@index');
-    Route::any('infoGroup', 'GroupController@info');
-    Route::any('addGroup', 'GroupController@add');
-    Route::any('editGroup', 'GroupController@edit');
-    Route::any('delGroup', 'GroupController@del');
-
-    Route::any('admin', 'AdminController@index');
-    Route::any('infoAdmin', 'AdminController@info');
-    Route::any('addAdmin', 'AdminController@add');
-    Route::any('editAdmin', 'AdminController@edit');
-    Route::any('delAdmin', 'AdminController@del');
-
-    Route::any('config', 'ConfigController@index');
-    Route::any('infoConfig', 'ConfigController@info');
-    Route::any('addConfig', 'ConfigController@add');
-    Route::any('editConfig', 'ConfigController@edit');
-    Route::any('delConfig', 'ConfigController@del');
-
-    Route::any('setting', 'ConfigController@setting');
+    Route::any('articleList', 'ArticleController@articleList');
+    Route::any('articleAdd', 'ArticleController@articleAdd');
+    Route::any('articleInfo', 'ArticleController@articleInfo');
+    Route::any('articleEdit', 'ArticleController@articleEdit');
+    Route::any('articleDel', 'ArticleController@articleDel');
 });

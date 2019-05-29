@@ -5,15 +5,15 @@ namespace App\Http\Controllers\Admin;
 use App\Models\Article;
 use App\Models\Category;
 use Illuminate\Http\Request;
-use App\Http\Controllers\BackendController;
+use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Pagination\LengthAwarePaginator;
 
-class CategoryController extends BackendController
+class CategoryController extends Controller
 {
-    //栏目列表
-    public function index(Request $request)
+    // 栏目列表
+    public function categoryList(Request $request)
     {
         if ($request->isMethod('post')) {
             $sort = $request->input('sort');
@@ -27,14 +27,14 @@ class CategoryController extends BackendController
         $pageSize = $request->input('pageSize',15);
         $offset = ($page-1)*$pageSize;
 
-        $data = $this->_sort(Category::orderBy('sort','asc')->get());
+        $data = $this->sorting(Category::orderBy('sort','asc')->get());
         $categorys = new LengthAwarePaginator(array_slice($data,$offset,$pageSize),count($data),$pageSize,$page,['path'=>$request->url(),'query'=>$request->query()]);
 
         return view('admin.category.index',['categorys'=>$categorys]);
     }
 
-    //添加栏目
-    public function add(Request $request)
+    // 栏目添加
+    public function categoryAdd(Request $request)
     {
         if ($request->isMethod('post')) {
             $validator = Validator::make($request->all(), [
@@ -46,8 +46,8 @@ class CategoryController extends BackendController
                 'name.required'=>'名称不能为空',
                 'type.required'=>'请选择类型',
                 'type.integer'=>'类型错误',
-                'parent_id.required'=>'上级权限不能为空',
-                'parent_id.integer'=>'上级权限为整数',
+                'parent_id.required'=>'上级栏目不能为空',
+                'parent_id.integer'=>'上级栏目为整数',
                 'sort.required'=>'排序不能为空',
                 'sort.integer'=>'排序为整数',
             ]);
@@ -68,35 +68,35 @@ class CategoryController extends BackendController
             }
         }
 
-        $categorys = $this->_sort(Category::orderBy('sort','asc')->get());
+        $categorys = $this->sorting(Category::orderBy('sort','asc')->get());
         return view('admin.category.add',['categorys'=>$categorys]);
     }
 
-    //查看栏目
-    public function info(Request $request)
+    // 栏目信息
+    public function categoryInfo(Request $request)
     {
         $validator = Validator::make($request->all(), [
             'id'=>'required|exists:categorys,id'
         ], [
             'id.required'=>'ID不能为空',
-            'id.exists'=>'该数据不存在',
+            'id.exists'=>'该栏目不存在',
         ]);
         if ($validator->fails()) return back()->withErrors(['error'=>$validator->errors()->first()])->withInput();
 
         $category = Category::find($request->input('id'));
-        $categorys = $this->_sort(Category::orderBy('sort','asc')->get());
+        $categorys = $this->sorting(Category::orderBy('sort','asc')->get());
         return view('admin.category.info',['category'=>$category,'categorys'=>$categorys]);
     }
 
-    //编辑栏目
-    public function edit(Request $request)
+    // 栏目编辑
+    public function categoryEdit(Request $request)
     {
         if ($request->isMethod('post')) {
             $validator = Validator::make($request->all(), [
                 'id'=>'required|exists:categorys,id',
                 'name'=>'required',
                 'type'=>'required|integer',
-                'parent_id'=>'required|integer',
+                'parent_id'=>'required|integer|not_in:'.$request->input('id'),
                 'sort'=>'required|integer',
             ], [
                 'id.required'=>'ID不能为空',
@@ -104,8 +104,9 @@ class CategoryController extends BackendController
                 'name.required'=>'名称不能为空',
                 'type.required'=>'请选择类型',
                 'type.integer'=>'类型错误',
-                'parent_id.required'=>'上级权限不能为空',
-                'parent_id.integer'=>'上级权限为整数',
+                'parent_id.required'=>'上级栏目不能为空',
+                'parent_id.integer'=>'上级栏目为整数',
+                'parent_id.not_in'=>'上级栏目不能是自己',
                 'sort.required'=>'排序不能为空',
                 'sort.integer'=>'排序为整数',
             ]);
@@ -135,44 +136,32 @@ class CategoryController extends BackendController
         if ($validator->fails()) return back()->withErrors(['error'=>$validator->errors()->first()])->withInput();
 
         $category = Category::find($request->input('id'));
-        $categorys = $this->_sort(Category::orderBy('sort','asc')->get());
+        $categorys = $this->sorting(Category::orderBy('sort','asc')->get());
         return view('admin.category.edit',['category'=>$category,'categorys'=>$categorys]);
     }
 
-    //删除栏目
-    public function del(Request $request)
+    // 栏目删除
+    public function categoryDel(Request $request)
     {
         $validator = Validator::make($request->all(), [
             'id'=>'required|exists:categorys,id'
         ], [
             'id.required'=>'ID不能为空',
-            'id.exists'=>'该数据不存在',
+            'id.exists'=>'该栏目不存在',
         ]);
         if ($validator->fails()) return back()->withErrors(['error'=>$validator->errors()->first()])->withInput();
 
-        DB::beginTransaction();
-        try {
-            $categorys = $this->_sort(Category::orderBy('sort','asc')->get(),$request->input('id'));
-            $category = [];
-            foreach ($categorys as $key=>$value) {
-                $category[] = $value['id'];
-            }
-            array_push($category,$request->input('id'));
+        $category = Category::where('parent_id',$request->input('id'))->first();
+        if ($category) return back()->withErrors(['error'=>'有其它栏目在使用该栏目作为上级栏目,不能删除'])->withInput();
 
-            $categorys = Category::destroy($category);
-            if (!$categorys) throw new \Exception('删除失败！');
+        $article = Article::where('category_id',$request->input('id'))->first();
+        if ($article) return back()->withErrors(['error'=>'有文章使用该栏目,不能删除'])->withInput();
 
-
-            //由于可能栏目下无文章,这样删除会返回false,
-            //如果需要返回正确结果,可以选查询出这些栏目下的所有文章,然后在删除,懒得去搞这些费时间的事,直接删除好了
-            $article = Article::whereIn('category_id',$category)->delete();
-            //if (!$article) throw new \Exception('删除失败！');
-
-            DB::commit();
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return back()->withErrors(['error'=>$e->getMessage()])->withInput();
+        $delCategory = Category::destroy($request->input('id'));
+        if ($delCategory) {
+            return back()->withErrors(['success'=>'删除成功！'])->withInput();
+        } else {
+            return back()->withErrors(['error'=>'删除失败！'])->withInput();
         }
-        return back()->withErrors(['success'=>'删除成功！'])->withInput();
     }
 }

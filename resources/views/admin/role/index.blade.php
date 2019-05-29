@@ -12,6 +12,8 @@
     <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
     <!-- Ionicons -->
     <link rel="stylesheet" href="https://cdn.bootcss.com/ionicons/2.0.0/css/ionicons.min.css">
+    <!-- Select2 -->
+    <link rel="stylesheet" href="https://cdn.bootcss.com/select2/4.0.5/css/select2.min.css">
     <!-- toastr -->
     <link rel="stylesheet" href="https://cdn.bootcss.com/toastr.js/2.1.4/toastr.min.css">
     <!-- Theme style -->
@@ -35,13 +37,13 @@
 
 <section class="content-header">
     <h1>
-        文章列表
+        角色列表
         <small></small>
     </h1>
     <ol class="breadcrumb">
         <li><a href="javascript:void(0)" onclick="top.location.href='{{ url('admin/index') }}'"><i class="fa fa-dashboard"></i> 首页</a></li>
-        <li><a href="javascript:void(0)">文章管理</a></li>
-        <li class="active">文章列表</li>
+        <li><a href="javascript:void(0)">管理员管理</a></li>
+        <li class="active">角色列表</li>
     </ol>
 </section>
 
@@ -51,58 +53,46 @@
             <div class="box">
                 <div class="box-header with-border">
                     <a class="btn btn-sm btn-primary grid-refresh" title="刷新" onclick="location.reload()"><i class="fa fa-refresh"></i><span class="hidden-xs"> 刷新</span></a>
-                    <a href="{{ url('admin/articleAdd') }}" class="btn btn-sm btn-success" title="新增"><i class="fa fa-plus"></i><span class="hidden-xs"> 新增</span></a>
+                    <a href="{{ url('admin/roleAdd') }}" class="btn btn-sm btn-success" title="新增"><i class="fa fa-plus"></i><span class="hidden-xs"> 新增</span></a>
                 </div>
                 <!-- /.box-header -->
                 <div class="box-body" style="overflow-x: auto;overflow-y: auto;">
                     <table class="table table-bordered">
                         <tr>
                             <th style="width: 40px">ID</th>
-                            <th>标题</th>
-                            <th>所属栏目</th>
-                            <th>发布用户</th>
-                            <th>点击量</th>
+                            <th>名称</th>
+                            <th>状态</th>
                             <th>创建时间</th>
                             <th>修改时间</th>
                             <th>操作</th>
                         </tr>
-                        @if (count($articles) > 0)
+                        @if (count($roles) > 0)
                             <form action="" method="post">
-                            @foreach ($articles as $key=>$value)
+                            @foreach ($roles as $key=>$value)
                                 <tr>
                                     <td>{{ $value->id }}</td>
-                                    <td>{{ $value->title }}</td>
-                                    @if (count($categorys) > 0)
-                                        @foreach ($categorys as $keyTwo=>$valueTwo)
-                                            @if ($value->category_id == $valueTwo->id)
-                                                <td>@if ($valueTwo->parent_id == 0) ｜ @endif {{ str_repeat('－',$valueTwo->level*4) }} {{ $valueTwo->name }}</td>
-                                            @endif
-                                        @endforeach
-                                    @else
-                                        <dt>暂无栏目</dt>
-                                    @endif
-                                    <td>{{ $value->admin->username }}</td>
-                                    <td>{{ $value->click }}</td>
+                                    <td>{{ $value->name }}</td>
+                                    <td>@if ($value->status === 1) 正常 @else 禁用 @endif</td>
                                     <td>{{ date('Y-m-d H:i:s',strtotime($value->created_at)) }}</td>
                                     <td>{{ date('Y-m-d H:i:s',strtotime($value->updated_at)) }}</td>
                                     <td>
-                                        <a href="{{ url('admin/articleInfo') }}?id={{ $value->id }}"><i class="fa fa-eye"></i></a>
-                                        <a href="{{ url('admin/articleEdit') }}?id={{ $value->id }}"><i class="fa fa-edit"></i></a>
-                                        <a href="javascript:void(0)" onclick="warning('确定要删除?','{{ url('admin/articleDel') }}?id={{ $value->id }}')" class="grid-row-delete"><i class="fa fa-trash"></i></a>
+                                        <a href="{{ url('admin/roleInfo') }}?id={{ $value->id }}"><i class="fa fa-eye"></i></a>
+                                        <a href="{{ url('admin/roleEdit') }}?id={{ $value->id }}"><i class="fa fa-edit"></i></a>
+                                        <a href="javascript:void(0)" onclick="warning('确定要删除?','{{ url('admin/roleDel') }}?id={{ $value->id }}')" class="grid-row-delete"><i class="fa fa-trash"></i></a>
                                     </td>
                                 </tr>
                             @endforeach
                             </form>
                         @else
                             <tr>
-                                <td colspan="8" align="center">暂无数据</td>
+                                <td colspan="6" align="center">暂无数据</td>
                             </tr>
                         @endif
                     </table>
                 </div>
                 <!-- /.box-body -->
                 <div class="box-footer clearfix text-center">
-                    {{ $articles->links() }}
+                    {{ $roles->links() }}
                 </div>
             </div>
             <!-- /.box -->
@@ -118,6 +108,8 @@
 <script src="https://cdn.bootcss.com/toastr.js/2.1.4/toastr.min.js"></script>
 <!-- Bootstrap 3.3.7 -->
 <script src="https://cdn.bootcss.com/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
+<!-- Select2 -->
+<script src="https://cdn.bootcss.com/select2/4.0.5/js/select2.full.min.js"></script>
 <!-- AdminLTE App -->
 <script src="{{ asset('static/admin/dist/js/adminlte.min.js') }}"></script>
 <!-- function warning -->

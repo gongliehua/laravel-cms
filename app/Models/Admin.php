@@ -2,13 +2,16 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Notifications\Notifiable;
+use Illuminate\Foundation\Auth\User as Authenticatable;
 
-class Admin extends Model
+class Admin extends Authenticatable
 {
-    //用户组
-    public function group()
+    use Notifiable;
+
+    // 获取管理员角色关系
+    public function adminRole()
     {
-        return $this->belongsTo('App\Models\Group');
+        return $this->hasOne('App\Models\AdminRole');
     }
 }

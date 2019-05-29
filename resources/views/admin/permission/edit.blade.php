@@ -18,8 +18,6 @@
     <link rel="stylesheet" href="https://cdn.bootcss.com/toastr.js/2.1.4/toastr.min.css">
     <!-- Theme style -->
     <link rel="stylesheet" href="{{ asset('static/admin/dist/css/AdminLTE.min.css') }}">
-    <!-- umeditor -->
-    <link href="{{ asset('umeditor/themes/default/css/umeditor.css') }}" type="text/css" rel="stylesheet">
 
     <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
     <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
@@ -35,14 +33,14 @@
 
 <section class="content-header">
     <h1>
-        栏目编辑
+        权限编辑
         <small></small>
     </h1>
     <ol class="breadcrumb">
         <li><a href="javascript:void(0)" onclick="top.location.href='{{ url('admin/index') }}'"><i class="fa fa-dashboard"></i> 首页</a></li>
-        <li><a href="javascript:void(0)">栏目管理</a>></li>
-        <li><a href="{{ url('admin/categoryList') }}">栏目列表</a></li>
-        <li class="active">栏目编辑</li>
+        <li><a href="javascript:void(0)">管理员管理</a>></li>
+        <li><a href="{{ url('admin/permissionList') }}">权限列表</a></li>
+        <li class="active">权限编辑</li>
     </ol>
 </section>
 
@@ -54,50 +52,45 @@
                 <form role="form" method="post" enctype="multipart/form-data">
                     <div class="box-body">
                         <div class="form-group">
-                            <label for="name">名称</label> @if ($errors->has('name')) {{ $errors->first('name') }} @endif
-                            <input type="text" name="name" class="form-control" id="name" value="{{ $category->name }}" placeholder="" autocomplete="off" required>
+                            <label for="title">标题</label> @if ($errors->has('title')) {{ $errors->first('title') }} @endif
+                            <input type="text" name="title" class="form-control" id="title" value="{{ $permission->title }}" placeholder="" autocomplete="off" required>
                         </div>
                         <div class="form-group">
-                            <label for="type">类型</label> @if ($errors->has('type')) {{ $errors->first('type') }} @endif
-                            <select name="type" class="form-control select2" style="width: 100%;">
-                                <option value="1" @if ($category->type == 1) selected @endif>列表</option>
-                                <option value="2" @if ($category->type == 2) selected @endif>单页</option>
-                                <option value="3" @if ($category->type == 3) selected @endif>链接</option>
+                            <label for="uri">URI</label> @if ($errors->has('uri')) {{ $errors->first('uri') }} @endif
+                            <input type="text" name="uri" class="form-control" id="uri" value="{{ $permission->uri }}" placeholder="" autocomplete="off">
+                        </div>
+                        <div class="form-group">
+                            <label for="icon">图标</label> @if ($errors->has('icon')) {{ $errors->first('icon') }} @endif
+                            <input type="text" name="icon" class="form-control" id="icon" value="{{ $permission->icon }}" placeholder="">
+                        </div>
+                        <div class="form-group">
+                            <label for="is_menu">菜单</label> @if ($errors->has('is_menu')) {{ $errors->first('is_menu') }} @endif
+                            <select name="is_menu" class="form-control select2" style="width: 100%;">
+                                <option value="1" @if ($permission->is_menu == 1) selected @endif>是</option>
+                                <option value="0" @if ($permission->is_menu == 0) selected @endif>否</option>
                             </select>
-                        </div>
-                        <div class="form-group">
-                            <label>上级栏目</label> @if ($errors->has('parent_id')) {{ $errors->first('parent_id') }} @endif
-                            <select name="parent_id" class="form-control select2" style="width: 100%;">
-                                <option value="0">｜顶级栏目</option>
-                                @if (count($categorys) > 0)
-                                    @foreach ($categorys as $key=>$value)
-                                        <option value="{{ $value->id }}" @if ($category->parent_id == $value->id) selected @endif @if ($category->id == $value->id) disabled @endif> @if ($value->parent_id == 0) ｜ @endif {{ str_repeat('－',$value->level*4) }} {{ $value->name }}</option>
-                                    @endforeach
-                                @endif
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label for="keywords">关键字</label> @if ($errors->has('keywords')) {{ $errors->first('keywords') }} @endif
-                            <input type="text" name="keywords" class="form-control" id="keywords" value="{{ $category->keywords }}" placeholder="" autocomplete="off">
-                        </div>
-                        <div class="form-group">
-                            <label for="description">描述</label> @if ($errors->has('description')) {{ $errors->first('description') }} @endif
-                            <textarea class="form-control" name="description" id="description" rows="3" placeholder="">{{ $category->description }}</textarea>
-                        </div>
-                        <div class="form-group" style="overflow: auto;">
-                            <label for="content">内容</label> @if ($errors->has('content')) {{ $errors->first('content') }} @endif
-                            <script type="text/plain" id="myEditor" name="content" style="width:100%;height:240px;">{!! $category->content !!}</script>
                         </div>
                         <div class="form-group">
                             <label for="sort">排序</label> @if ($errors->has('sort')) {{ $errors->first('sort') }} @endif
-                            <input type="text" name="sort" class="form-control" id="sort" value="{{ $category->sort  }}" placeholder="" autocomplete="off" required>
+                            <input type="text" name="sort" class="form-control" id="sort" value="{{ $permission->sort }}" placeholder="" required>
+                        </div>
+                        <div class="form-group">
+                            <label>上级权限</label> @if ($errors->has('parent_id')) {{ $errors->first('parent_id') }} @endif
+                            <select name="parent_id" class="form-control select2" style="width: 100%;">
+                                <option value="0">｜顶级权限</option>
+                                @if (count($permissions) > 0)
+                                    @foreach ($permissions as $key=>$value)
+                                        <option value="{{ $value->id }}" @if ($value->id == $permission->parent_id) selected @endif @if ($value->id == $permission->id) disabled @endif> @if ($value->parent_id == 0) ｜ @endif {{ str_repeat('－',$value->level*4) }} {{ $value->title }}</option>
+                                    @endforeach
+                                @endif
+                            </select>
                         </div>
                     </div>
                     <!-- /.box-body -->
 
                     <div class="box-footer">
-                        {{ csrf_field() }}
-                        <button type="submit" class="btn btn-primary">提交</button>
+                    {{ csrf_field() }}
+                    <button type="submit" class="btn btn-primary">提交</button>
                     </div>
                 </form>
             </div>
@@ -110,9 +103,6 @@
 
 <!-- jQuery 3 -->
 <script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
-<!-- umeditor -->
-<script src="{{ asset('umeditor/umeditor.config.js') }}"></script>
-<script src="{{ asset('umeditor/umeditor.js') }}"></script>
 <!-- toastr -->
 <script src="https://cdn.bootcss.com/toastr.js/2.1.4/toastr.min.js"></script>
 <!-- Bootstrap 3.3.7 -->
@@ -123,8 +113,6 @@
 <script src="{{ asset('static/admin/dist/js/adminlte.min.js') }}"></script>
 <!-- Diy js -->
 <script>
-    var um = UM.getEditor('myEditor');
-
     $(function(){
         $('.select2').select2();
     });

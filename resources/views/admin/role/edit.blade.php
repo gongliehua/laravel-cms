@@ -18,8 +18,6 @@
     <link rel="stylesheet" href="https://cdn.bootcss.com/toastr.js/2.1.4/toastr.min.css">
     <!-- Theme style -->
     <link rel="stylesheet" href="{{ asset('static/admin/dist/css/AdminLTE.min.css') }}">
-    <!-- umeditor -->
-    <link href="{{ asset('umeditor/themes/default/css/umeditor.css') }}" type="text/css" rel="stylesheet">
 
     <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
     <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
@@ -35,14 +33,14 @@
 
 <section class="content-header">
     <h1>
-        栏目编辑
+        角色编辑
         <small></small>
     </h1>
     <ol class="breadcrumb">
         <li><a href="javascript:void(0)" onclick="top.location.href='{{ url('admin/index') }}'"><i class="fa fa-dashboard"></i> 首页</a></li>
-        <li><a href="javascript:void(0)">栏目管理</a>></li>
-        <li><a href="{{ url('admin/categoryList') }}">栏目列表</a></li>
-        <li class="active">栏目编辑</li>
+        <li><a href="javascript:void(0)">管理员管理</a>></li>
+        <li><a href="{{ url('admin/roleList') }}">角色列表</a></li>
+        <li class="active">角色编辑</li>
     </ol>
 </section>
 
@@ -55,42 +53,24 @@
                     <div class="box-body">
                         <div class="form-group">
                             <label for="name">名称</label> @if ($errors->has('name')) {{ $errors->first('name') }} @endif
-                            <input type="text" name="name" class="form-control" id="name" value="{{ $category->name }}" placeholder="" autocomplete="off" required>
+                            <input type="text" name="name" class="form-control" id="name" value="{{ $role->name }}" placeholder="" autocomplete="off" required>
                         </div>
                         <div class="form-group">
-                            <label for="type">类型</label> @if ($errors->has('type')) {{ $errors->first('type') }} @endif
-                            <select name="type" class="form-control select2" style="width: 100%;">
-                                <option value="1" @if ($category->type == 1) selected @endif>列表</option>
-                                <option value="2" @if ($category->type == 2) selected @endif>单页</option>
-                                <option value="3" @if ($category->type == 3) selected @endif>链接</option>
+                            <label for="status">状态</label> @if ($errors->has('status')) {{ $errors->first('status') }} @endif
+                            <select name="status" class="form-control select2" style="width: 100%;">
+                                <option value="1" @if ($role->status === 1) selected @endif>正常</option>
+                                <option value="0" @if ($role->status === 0) selected @endif>禁用</option>
                             </select>
                         </div>
-                        <div class="form-group">
-                            <label>上级栏目</label> @if ($errors->has('parent_id')) {{ $errors->first('parent_id') }} @endif
-                            <select name="parent_id" class="form-control select2" style="width: 100%;">
-                                <option value="0">｜顶级栏目</option>
-                                @if (count($categorys) > 0)
-                                    @foreach ($categorys as $key=>$value)
-                                        <option value="{{ $value->id }}" @if ($category->parent_id == $value->id) selected @endif @if ($category->id == $value->id) disabled @endif> @if ($value->parent_id == 0) ｜ @endif {{ str_repeat('－',$value->level*4) }} {{ $value->name }}</option>
-                                    @endforeach
-                                @endif
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label for="keywords">关键字</label> @if ($errors->has('keywords')) {{ $errors->first('keywords') }} @endif
-                            <input type="text" name="keywords" class="form-control" id="keywords" value="{{ $category->keywords }}" placeholder="" autocomplete="off">
-                        </div>
-                        <div class="form-group">
-                            <label for="description">描述</label> @if ($errors->has('description')) {{ $errors->first('description') }} @endif
-                            <textarea class="form-control" name="description" id="description" rows="3" placeholder="">{{ $category->description }}</textarea>
-                        </div>
-                        <div class="form-group" style="overflow: auto;">
-                            <label for="content">内容</label> @if ($errors->has('content')) {{ $errors->first('content') }} @endif
-                            <script type="text/plain" id="myEditor" name="content" style="width:100%;height:240px;">{!! $category->content !!}</script>
-                        </div>
-                        <div class="form-group">
-                            <label for="sort">排序</label> @if ($errors->has('sort')) {{ $errors->first('sort') }} @endif
-                            <input type="text" name="sort" class="form-control" id="sort" value="{{ $category->sort  }}" placeholder="" autocomplete="off" required>
+                        <div class="form-group" id="rules">
+                            <label>权限列表</label> @if ($errors->has('permission_id')) {{ $errors->first('permission_id') }} @endif
+                            @if (count($permissions) > 0)
+                                @foreach ($permissions as $key=>$value)
+                                    <div class="checkbox"><label><input type="checkbox" name="permission_id[]" value="{{ $value->id }}" data-id="{{ $value->id }}" data-parentid="{{ $value->parent_id }}" @if (in_array($value->id,$permission_id)) checked @endif>@if ($value->parent_id === 0) ｜ @endif {{ str_repeat('－',$value->level*4) }} {{ $value->title }}</label></div>
+                                @endforeach
+                            @else
+                                <div class="checkbox"><label><input type="checkbox">暂无权限</label></div>
+                            @endif
                         </div>
                     </div>
                     <!-- /.box-body -->
@@ -110,9 +90,6 @@
 
 <!-- jQuery 3 -->
 <script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
-<!-- umeditor -->
-<script src="{{ asset('umeditor/umeditor.config.js') }}"></script>
-<script src="{{ asset('umeditor/umeditor.js') }}"></script>
 <!-- toastr -->
 <script src="https://cdn.bootcss.com/toastr.js/2.1.4/toastr.min.js"></script>
 <!-- Bootstrap 3.3.7 -->
@@ -123,10 +100,14 @@
 <script src="{{ asset('static/admin/dist/js/adminlte.min.js') }}"></script>
 <!-- Diy js -->
 <script>
-    var um = UM.getEditor('myEditor');
-
     $(function(){
         $('.select2').select2();
+        $('input[type="checkbox"]').click(function(){
+            if($(this).prop('checked')) {
+                $('input[data-parentid="'+$(this).attr('data-id')+'"]').prop('checked',true);
+                $('input[data-id="'+$(this).attr('data-parentid')+'"]').prop('checked',true);
+            }
+        });
     });
 
     function uploadImg(file,imgTag){

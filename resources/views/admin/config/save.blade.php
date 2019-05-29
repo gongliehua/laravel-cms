@@ -12,6 +12,8 @@
     <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
     <!-- Ionicons -->
     <link rel="stylesheet" href="https://cdn.bootcss.com/ionicons/2.0.0/css/ionicons.min.css">
+    <!-- Select2 -->
+    <link rel="stylesheet" href="https://cdn.bootcss.com/select2/4.0.5/css/select2.min.css">
     <!-- toastr -->
     <link rel="stylesheet" href="https://cdn.bootcss.com/toastr.js/2.1.4/toastr.min.css">
     <!-- Theme style -->
@@ -35,13 +37,13 @@
 
 <section class="content-header">
     <h1>
-        配置列表
+        配置管理
         <small></small>
     </h1>
     <ol class="breadcrumb">
         <li><a href="javascript:void(0)" onclick="top.location.href='{{ url('admin/index') }}'"><i class="fa fa-dashboard"></i> 首页</a></li>
         <li><a href="javascript:void(0)">系统管理</a></li>
-        <li class="active">配置列表</li>
+        <li class="active">配置管理</li>
     </ol>
 </section>
 
@@ -51,72 +53,79 @@
             <div class="box">
                 <div class="box-header with-border">
                     <a class="btn btn-sm btn-primary grid-refresh" title="刷新" onclick="location.reload()"><i class="fa fa-refresh"></i><span class="hidden-xs"> 刷新</span></a>
-                    <a href="{{ url('admin/configAdd') }}" class="btn btn-sm btn-success" title="新增"><i class="fa fa-plus"></i><span class="hidden-xs"> 新增</span></a>
+                    {{--<a href="{{ url('admin/addConfig') }}" class="btn btn-sm btn-success" title="新增"><i class="fa fa-plus"></i><span class="hidden-xs"> 新增</span></a>--}}
                 </div>
                 <!-- /.box-header -->
                 <div class="box-body" style="overflow-x: auto;overflow-y: auto;">
                     <table class="table table-bordered">
                         <tr>
-                            <th style="width: 40px">ID</th>
-                            <th>标题</th>
-                            <th>名称</th>
-                            <th>类型</th>
-                            <th>排序</th>
-                            <th>创建时间</th>
-                            <th>修改时间</th>
-                            <th>操作</th>
+                            <th style="width: 200px">配置标题</th>
+                            <th>配置值</th>
                         </tr>
                         @if (count($configs) > 0)
                             <form action="" method="post">
-                            @foreach ($configs as $key=>$value)
-                                <tr>
-                                    <td>{{ $value->id }}</td>
-                                    <td><input type="text" name="sort[{{ $value->id }}]" value="{{ $value->sort }}" style="width: 50px;text-align: center"></td>
-                                    <td>{{ $value->name }}</td>
-                                    <td>{{ $value->title }}</td>
-                                    @switch($value->type)
-                                        @case(1)
-                                            <td>单行文本</td>
+                                @foreach ($configs as $key=>$value)
+                                    <tr>
+                                        <td>{{ $value->title }}</td>
+                                        @switch($value->type)
+                                            @case(1)
+                                            <td><input type="text" name="name[{{ $value->name }}]" class="form-control" value="{{ $value->values }}" placeholder="" autocomplete="off"></td>
                                             @break
-                                        @case(2)
-                                            <td>多行文本</td>
+                                            @case(2)
+                                            <td><textarea class="form-control" name="name[{{ $value->name }}]" rows="3" placeholder="">{{ $value->values }}</textarea></td>
                                             @break
-                                        @case(3)
-                                            <td>单选按钮</td>
+                                            @case(3)
+                                            <td>
+                                                @foreach (explode(',',$value->value) as $keyTwo=>$valueTwo)
+                                                    <div class="radio">
+                                                        <label>
+                                                            <input type="radio" name="name[{{ $value->name }}]" value="{{ $valueTwo }}" @if ($value->values == $valueTwo) checked @endif>
+                                                            {{ $valueTwo }}
+                                                        </label>
+                                                    </div>
+                                                @endforeach
+                                            </td>
                                             @break
-                                        @case(4)
-                                            <td>复选框</td>
+                                            @case(4)
+                                            <td>
+                                                @foreach (explode(',',$value->value) as $keyTwo=>$valueTwo)
+                                                    <div class="checkbox">
+                                                        <label>
+                                                            <input type="checkbox" name="name[{{ $value->name }}][]" value="{{ $valueTwo }}" @if (in_array($valueTwo,explode(',',$value->values))) checked @endif>
+                                                            {{ $valueTwo }}
+                                                        </label>
+                                                    </div>
+                                                @endforeach
+                                            </td>
                                             @break
-                                        @case(5)
-                                            <td>下拉框</td>
+                                            @case(5)
+                                            <td>
+                                                <select name="name[{{ $value->name }}]" class="form-control select2" style="width: 100%;">
+                                                @foreach (explode(',',$value->value) as $keyTwo=>$valueTwo)
+                                                        <option value="{{ $valueTwo }}" @if (in_array($valueTwo,explode(',',$value->values))) selected @endif>{{ $valueTwo }}</option>
+                                                @endforeach
+                                                </select>
+                                            </td>
                                             @break
-                                        @default
-                                            <td>未知类型 {{ $value->type }}</td>
-                                    @endswitch
-                                    <td>{{ date('Y-m-d H:i:s',strtotime($value->created_at)) }}</td>
-                                    <td>{{ date('Y-m-d H:i:s',strtotime($value->updated_at)) }}</td>
-                                    <td>
-                                        <a href="{{ url('admin/configInfo') }}?id={{ $value->id }}"><i class="fa fa-eye"></i></a>
-                                        <a href="{{ url('admin/configEdit') }}?id={{ $value->id }}"><i class="fa fa-edit"></i></a>
-                                        <a href="javascript:void(0)" onclick="warning('确定要删除?','{{ url('admin/configDel') }}?id={{ $value->id }}')" class="grid-row-delete"><i class="fa fa-trash"></i></a>
-                                    </td>
-                                </tr>
-                            @endforeach
+                                            @default
+                                            <td>{{ $value->type }}</td>
+                                        @endswitch
+                                    </tr>
+                                @endforeach
                                 <tr>
                                     {{ csrf_field() }}
-                                    <td colspan="10"><input type="submit" value="排序"></td>
+                                    <td colspan="2"><input type="submit" value="修改"></td>
                                 </tr>
                             </form>
                         @else
                             <tr>
-                                <td colspan="8" align="center">暂无数据</td>
+                                <td colspan="2" align="center">暂无数据</td>
                             </tr>
                         @endif
                     </table>
                 </div>
                 <!-- /.box-body -->
                 <div class="box-footer clearfix text-center">
-                    {{ $configs->links() }}
                 </div>
             </div>
             <!-- /.box -->
@@ -132,6 +141,8 @@
 <script src="https://cdn.bootcss.com/toastr.js/2.1.4/toastr.min.js"></script>
 <!-- Bootstrap 3.3.7 -->
 <script src="https://cdn.bootcss.com/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
+<!-- Select2 -->
+<script src="https://cdn.bootcss.com/select2/4.0.5/js/select2.full.min.js"></script>
 <!-- AdminLTE App -->
 <script src="{{ asset('static/admin/dist/js/adminlte.min.js') }}"></script>
 <!-- function warning -->
@@ -143,6 +154,7 @@
     }
     toastr.options = {closeButton: true,progressBar: true};
     $(function () {
+        $('.select2').select2();
         @if ($errors->has('success'))
         toastr.success('{{ $errors->first('success') }}');
         @endif

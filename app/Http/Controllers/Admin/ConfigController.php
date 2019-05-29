@@ -4,13 +4,13 @@ namespace App\Http\Controllers\Admin;
 
 use App\Models\Config;
 use Illuminate\Http\Request;
-use App\Http\Controllers\BackendController;
+use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Validator;
 
-class ConfigController extends BackendController
+class ConfigController extends Controller
 {
-    //配置列表
-    public function index(Request $request)
+    // 配置列表
+    public function configList(Request $request)
     {
         if ($request->isMethod('post')) {
             $sort = $request->input('sort');
@@ -24,20 +24,22 @@ class ConfigController extends BackendController
         return view('admin.config.index',['configs'=>$configs]);
     }
 
-    //添加配置
-    public function add(Request $request)
+    // 配置添加
+    public function configAdd(Request $request)
     {
         if ($request->isMethod('post')) {
             $validator = Validator::make($request->all(), [
                 'title'=>'required',
-                'name'=>'required|unique:configs',
-                'type'=>'required',
+                'name'=>'required|alpha_dash|unique:configs',
+                'type'=>'required|integer',
                 'sort'=>'required|integer',
             ], [
                 'title.required'=>'标题不能为空',
                 'name.required'=>'名称不能为空',
+                'name.alpha_dash'=>'名称仅包含字母数字破折号和下划线',
                 'name.unique'=>'该名称已存在',
                 'type.required'=>'请选择类型',
+                'type.integer'=>'类型为整数',
                 'sort.required'=>'排序不能为空',
                 'sort.integer'=>'排序为整数',
             ]);
@@ -59,14 +61,14 @@ class ConfigController extends BackendController
         return view('admin.config.add');
     }
 
-    //查看配置
-    public function info(Request $request)
+    // 配置查看
+    public function configInfo(Request $request)
     {
         $validator = Validator::make($request->all(), [
             'id'=>'required|exists:configs,id'
         ], [
             'id.required'=>'ID不能为空',
-            'id.exists'=>'该数据不存在',
+            'id.exists'=>'该配置不存在',
         ]);
         if ($validator->fails()) return back()->withErrors(['error'=>$validator->errors()->first()])->withInput();
 
@@ -74,23 +76,25 @@ class ConfigController extends BackendController
         return view('admin.config.info',['config'=>$config]);
     }
 
-    //编辑配置
-    public function edit(Request $request)
+    // 配置编辑
+    public function configEdit(Request $request)
     {
         if ($request->isMethod('post')) {
             $validator = Validator::make($request->all(), [
                 'id'=>'required|exists:configs,id',
                 'title'=>'required',
-                'name'=>'required|unique:configs,name,'.$request->input('id').',id',
-                'type'=>'required',
+                'name'=>'required|alpha_dash|unique:configs,name,'.$request->input('id').',id',
+                'type'=>'required|integer',
                 'sort'=>'required|integer',
             ], [
                 'id.required'=>'ID不能为空',
                 'id.exists'=>'该数据不存在',
                 'title.required'=>'标题不能为空',
                 'name.required'=>'名称不能为空',
+                'name.alpha_dash'=>'名称仅包含字母数字破折号和下划线',
                 'name.unique'=>'该名称已存在',
                 'type.required'=>'请选择类型',
+                'type.integer'=>'类型为整数',
                 'sort.required'=>'排序不能为空',
                 'sort.integer'=>'排序为整数',
             ]);
@@ -114,7 +118,7 @@ class ConfigController extends BackendController
             'id'=>'required|exists:configs,id'
         ], [
             'id.required'=>'ID不能为空',
-            'id.exists'=>'该数据不存在',
+            'id.exists'=>'该配置不存在',
         ]);
         if ($validator->fails()) return back()->withErrors(['error'=>$validator->errors()->first()])->withInput();
 
@@ -122,8 +126,8 @@ class ConfigController extends BackendController
         return view('admin.config.edit',['config'=>$config]);
     }
 
-    //删除配置
-    public function del(Request $request)
+    // 配置删除
+    public function configDel(Request $request)
     {
         $validator = Validator::make($request->all(), [
             'id'=>'required|exists:configs,id'
@@ -141,8 +145,8 @@ class ConfigController extends BackendController
         }
     }
 
-    //配置管理
-    public function setting(Request $request)
+    // 配置管理
+    public function configSave(Request $request)
     {
         if ($request->isMethod('post')) {
             $name = $request->input('name');
@@ -153,6 +157,6 @@ class ConfigController extends BackendController
             return back()->withErrors(['success'=>'修改成功！'])->withInput();
         }
         $configs = Config::orderBy('sort','asc')->get();
-        return view('admin.config.setting',['configs'=>$configs]);
+        return view('admin.config.save',['configs'=>$configs]);
     }
 }

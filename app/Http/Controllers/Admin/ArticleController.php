@@ -5,21 +5,22 @@ namespace App\Http\Controllers\Admin;
 use App\Models\Article;
 use App\Models\Category;
 use Illuminate\Http\Request;
-use App\Http\Controllers\BackendController;
+use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 
-class ArticleController extends BackendController
+class ArticleController extends Controller
 {
-    //文章列表
-    public function index(Request $request)
+    // 文章列表
+    public function articleList(Request $request)
     {
         $articles = Article::with(['category','admin'])->paginate();
-        $categorys = $this->_sort(Category::orderBy('sort','asc')->get());
+        $categorys = $this->sorting(Category::orderBy('sort','asc')->get());
         return view('admin.article.index',['articles'=>$articles,'categorys'=>$categorys]);
     }
 
-    //添加文章
-    public function add(Request $request)
+    // 文章添加
+    public function articleAdd(Request $request)
     {
         if ($request->isMethod('post')) {
             $validator = Validator::make($request->all(), [
@@ -40,7 +41,7 @@ class ArticleController extends BackendController
             $article->description = $request->input('description');
             $article->content = $request->input('content');
             $article->category_id = $request->input('category_id');
-            $article->admin_id = $request->session()->get('admin.id');
+            $article->admin_id = Auth::guard('webAdmin')->id();
             if ($article->save()) {
                 return back()->withErrors(['success'=>'添加成功！'])->withInput();
             } else {
@@ -48,28 +49,28 @@ class ArticleController extends BackendController
             }
         }
 
-        $categorys = $this->_sort(Category::orderBy('sort','asc')->get());
+        $categorys = $this->sorting(Category::orderBy('sort','asc')->get());
         return view('admin.article.add',['categorys'=>$categorys]);
     }
 
-    //查看文章
-    public function info(Request $request)
+    // 文章信息
+    public function articleInfo(Request $request)
     {
         $validator = Validator::make($request->all(), [
             'id'=>'required|exists:articles,id'
         ], [
             'id.required'=>'ID不能为空',
-            'id.exists'=>'该数据不存在',
+            'id.exists'=>'该文章不存在',
         ]);
         if ($validator->fails()) return back()->withErrors(['error'=>$validator->errors()->first()])->withInput();
 
         $article = Article::find($request->input('id'));
-        $categorys = $this->_sort(Category::orderBy('sort','asc')->get());
+        $categorys = $this->sorting(Category::orderBy('sort','asc')->get());
         return view('admin.article.info',['article'=>$article,'categorys'=>$categorys]);
     }
 
-    //编辑文章
-    public function edit(Request $request)
+    // 文章编辑
+    public function articleEdit(Request $request)
     {
         if ($request->isMethod('post')) {
             $validator = Validator::make($request->all(), [
@@ -93,7 +94,7 @@ class ArticleController extends BackendController
             $article->description = $request->input('description');
             $article->content = $request->input('content');
             $article->category_id = $request->input('category_id');
-            $article->admin_id = $request->session()->get('admin.id');
+            $article->admin_id = Auth::guard('webAdmin')->id();
             if ($article->save()) {
                 return back()->withErrors(['success'=>'修改成功！'])->withInput();
             } else {
@@ -105,23 +106,23 @@ class ArticleController extends BackendController
             'id'=>'required|exists:articles,id'
         ], [
             'id.required'=>'ID不能为空',
-            'id.exists'=>'该数据不存在',
+            'id.exists'=>'该文章不存在',
         ]);
         if ($validator->fails()) return back()->withErrors(['error'=>$validator->errors()->first()])->withInput();
 
         $article = Article::find($request->input('id'));
-        $categorys = $this->_sort(Category::orderBy('sort','asc')->get());
+        $categorys = $this->sorting(Category::orderBy('sort','asc')->get());
         return view('admin.article.edit',['article'=>$article,'categorys'=>$categorys]);
     }
 
-    //删除文章
-    public function del(Request $request)
+    // 文章删除
+    public function articleDel(Request $request)
     {
         $validator = Validator::make($request->all(), [
             'id'=>'required|exists:articles,id'
         ], [
             'id.required'=>'ID不能为空',
-            'id.exists'=>'该数据不存在',
+            'id.exists'=>'该文章不存在',
         ]);
         if ($validator->fails()) return back()->withErrors(['error'=>$validator->errors()->first()])->withInput();
 
